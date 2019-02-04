@@ -38,14 +38,10 @@ def readInput(inputFile, pickleOut=True, noStop = True):
                 logging.info ("read {0} reviews".format (i))
             # do some pre-processing and return a list of words for each review text
             documents.append(gensim.utils.simple_preprocess (line))
-    print(documents[1])
-    print(documents[2])
-
+   
     if noStop:
         documents = removeStopwords(documents)
 
-    print(documents[1])
-    print(documents[2])
     if pickleOut:
         with open(outFile, 'wb') as f:
             pickle.dump(documents, f)
