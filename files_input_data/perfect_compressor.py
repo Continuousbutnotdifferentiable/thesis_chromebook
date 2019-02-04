@@ -91,29 +91,17 @@ def indexGetter(array,index):
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-inFile = "review1.txt"
+def vectorDictionaryMaker(inArray,noStop = True):
+    vecDict = dict()
+    for i in inArray:
+        vecDict["vecs"+str(i)+"_nostop"] = KeyedVectors.load("vecs"+str(i)+"_nostop.kv", mmap='r')
+    return vecDict
 
-word_vectors_5 = KeyedVectors.load("vecs_5_nostop.kv", mmap='r')
-word_vectors_10 = KeyedVectors.load("vecs_10_nostop.kv",mmap='r')
-'''
-word_vectors_35 = KeyedVectors.load("vecs_35_nostop.kv", mmap='r')
-word_vectors_45 = KeyedVectors.load("vecs_45_nostop.kv", mmap='r')
-word_vectors_55 = KeyedVectors.load("vecs_55_nostop.kv", mmap='r')
-word_vectors_65 = KeyedVectors.load("vecs_65_nostop.kv", mmap='r')
-word_vectors_75 = KeyedVectors.load("vecs_75_nostop.kv", mmap='r')
-'''
-    
-vectorDictionary = {"vecs_05_":word_vectors_5,"vecs_10_":word_vectors_10}
-
-distanceFunctionDictionary = {"head_to_head_":headToHead}
-
-inFileArray = fileOpener(inFile)
-
-for string, vector in vectorDictionary.items():
-    word_vectors = vector
-    length = int(string[5:7])
-    fileDictionary = {}
-    for functionName, function in distanceFunctionDictionary.items():
+def fileCompressor(inFileArray,vecDict):
+    for string, vector in vecDict.items():
+        word_vectors = vector
+        length = int(re.findall("\d+",string)[0])
+        fileDictionary = {}
         outArray = outArrayMaker(inFileArray,word_vectors)
         decapArray = decapitalizer(inFileArray)
         firstWord = True
@@ -131,7 +119,7 @@ for string, vector in vectorDictionary.items():
             if newIndex == None:
                 break
             newVector2 = vectorShrinker(word_vectors[decapArray[newIndex]])
-            vectorBetween = function(newVector1,newVector2)
+            vectorBetween = headToHead(newVector1,newVector2)
             outArray[newIndex][:length] = vectorBetween
             fileDictionary[decapArray[i]] = newVector1
             fileDictionary[decapArray[newIndex]] = newVector2
@@ -146,3 +134,11 @@ for string, vector in vectorDictionary.items():
 
 # NEED TO HANDLE MULTIPLE SPACES, BAD(NO) SPACES.. COULD USE "IS ALPHA??"
 # Inting vectors doesnt work, need to use different rounding.
+
+def driver():
+    inFile = "review1.txt"
+    inFileArray = fileOpener(inFile)
+    numArray = [4,5,6]
+    vectorDict = vectorDictionaryMaker(numArray)
+    fileCompressor(inFileArray,vectorDict)
+    sys.exit("ALL DONE")
