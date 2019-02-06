@@ -117,10 +117,10 @@ for string, vector in vectorDictionary.items():
                 newVector1 = vectorShrinker(word_vectors[decapArray[i]])
                 outArray[i][:length] = newVector1
                 fileDictionary[decapArray[i]] = newVector1
-        with open("pickle_dictionary_"+string+".p", 'wb') as f:  
+        with open("pickle_dictionary_wordonly"+string+".p", 'wb') as f:  
             pickle.dump(fileDictionary, f)
         f.close()
-        with open("vectors_out_nohead_"+string+".txt", 'w') as g:
+        with open("vectors_out_nohead_wordonly"+string+".txt", 'w') as g:
             for item in outArray:
                 g.write("%s\n"%item)
         g.close()
