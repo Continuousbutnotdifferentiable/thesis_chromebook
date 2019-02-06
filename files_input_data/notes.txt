@@ -1,3 +1,5 @@
 1. pip3 install gensim
 2. tweaked window size (ask mark about this)
 contemplate min count??
+change vectorShrinker to take precision as a parameter
+no idea what fileOpener does

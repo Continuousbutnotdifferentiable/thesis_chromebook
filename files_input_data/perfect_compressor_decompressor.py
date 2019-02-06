@@ -17,31 +17,36 @@ DECIMAL_PLACES = 0
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-def head_to_head_undo(vector1,vector2,length):
+def headToHeadUndo(vector1,vector2,length):
+    """Undos the HeadToHead operation for decompression"""
     newWord = []
     for i in range(length):
         newWord.append(vector1[i]+vector2[i])
     return newWord
 
 def intxtToArray(inVectors):
+    """Takes .txt file of vectors and literals and parses them into new array"""
     with open(inVectors,"r+") as f:
         readList = f.readlines()
     outArray = []
     for item in readList:
+        # Handles arrays
         if item[0] == '[':
             outArray.append(ast.literal_eval(item))
+        # Handles literals removing newlines
         else:
-            #no idea why this line was here??
-            itemCopy = item[:-1]
+            # itemCopy = item[:-1] no idea why this line is here...
             outArray.append(item[:-1])
     f.close()
     return outArray
 
 def vectorProcessor(vector,dictionary,length):
+    """ Takes a vector and a dictionary of words and vectors and returns the corresponding word correctly cased"""
     word = ''
     for dWord, dVector in dictionary.items():
         if numpy.allclose(vector[:length],dVector,atol=1e-01):
             for i in range(len(dWord)):
+                # Handles capitalization
                 if i in vector[length:]:
                     word += dWord[i].upper()
                 else:
@@ -49,12 +54,14 @@ def vectorProcessor(vector,dictionary,length):
     return word
 
 def headToHead(word1,word2):
+    """ Does tip to tail operation to determine the vector between words"""
     newVector = []
     for i in range(0,len(word1)):
         newVector.append(word2[i]-word1[i])
     return newVector
 
 def vectorShrinker(vector):
+    """ Makes vectors with integer precision """
     newVector = []
     for entry in vector:
         newVector.append(int(round(entry)))
@@ -90,30 +97,39 @@ def fileOpener(inFile):
     return inFileArray[1:]
 
 def outArrayMaker(inFileArray, word_vectors,length):
+    """ Takes the vector for a word and handles the uppercase letter 
+    (stores that information inside the vector)
+    
+    """
     outArray = []
     for item in inFileArray:
             if item.lower() in word_vectors.vocab:
                 vector = [0] * length
                 for i in range(len(item)):
+                    # Checks case and appends the index for decompression
                     if item[i].isupper():
                         vector.append(i)
                 outArray.append(vector)
             else:
+                # Otherwise appends literal
                 outArray.append(item)
     return outArray
 
 def decapitalizer(inFileArray):
+    """ Decapitalizes all the words in the file array """
     newArray = []
     for item in inFileArray:
         newArray.append(item.lower())
     return newArray
 
 def indexGetter(array,index):
+    """ Gets the index of the next vectorized word"""
     for item in array[index+1:]:
         if isinstance(item,list):
             return array.index(item)
 
 def vectorDictionaryMaker(inArray,noStop = True):
+    """ Opens the keyed vectors and saves them into a dictionary """
     vecDict = dict()
     for i in inArray:
         vecDict["vecs"+str(i)+"_nostop"] = KeyedVectors.load("vecs"+str(i)+"_nostop.kv", mmap='r')
@@ -135,7 +151,6 @@ def headToHeadCompressor(inFileArray,vecDict):
                 if decapArray[i] not in word_vectors.vocab:
                     continue
                 else:
-                    # CHANGE THIS TO BE LESS SLOPPY CALL FUNCTION
                     outArray[i][:length] = vectorShrinker(word_vectors[decapArray[i]])
                     firstWord = False
             
@@ -227,7 +242,7 @@ def headToHeadDecompressor(inPickle,inVectors):
         for item in inArray[i+1:index]:
             outString += item 
         
-        vector1 = head_to_head_undo(vector1,inArray[index],length)
+        vector1 = headToHeadUndo(vector1,inArray[index],length)
         outString += vectorProcessor(vector1,compressionDictionary,length)
         
         i = index

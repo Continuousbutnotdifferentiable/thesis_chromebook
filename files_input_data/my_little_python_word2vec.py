@@ -19,8 +19,9 @@ if len(sys.argv) > 1:
 
 # Unpickle the documents list
 def readInput(inputFile, pickleOut=True, noStop = True):
-    """This function reads the input file which is in gzip format"""
+    """This function reads the input file which is in gzip format, pickles it for later use, and strips stopwords"""
     
+    #
     if inputFile.endswith(".txt.gz"):
         logging.info("file {0} opened. Preprocessing and pickling.".format(inputFile))
         outFile = inputFile[:-7]+".p"
@@ -40,28 +41,33 @@ def readInput(inputFile, pickleOut=True, noStop = True):
             # do some pre-processing and return a list of words for each review text
             documents.append(gensim.utils.simple_preprocess (line))
    
+    # Remove stopwords
     if noStop:
         documents = removeStopwords(documents)
 
+    # Pickle the documents list
     if pickleOut:
         with open(outFile, 'wb') as f:
             pickle.dump(documents, f)
         f.close()
     
+    # Return list of lists
     return documents
 
 
 def trainVecs(dimensionList, documents, noStop = True, numEpochs = 15):
+    """Trains a word2vec model based on the dimensions in the input list and saves keyed vectors"""
     for i in dimensionList:
         outString = "vecs"+str(i)
         if noStop:
             outString += "_nostop"
-        model = gensim.models.Word2Vec(documents,size=i,window=7,min_count=2,workers=10)
+        model = gensim.models.Word2Vec(documents,size=i,window=8,min_count=2,workers=10)
         model.train(documents, total_examples=len(documents), epochs=numEpochs)
         word_vectors = model.wv
         word_vectors.save(outString+".kv")
 
 def removeStopwords(docsList):
+    """Rebuilds the documents list without stopwords by calling gensim's remove_stopwords"""
     newList = []
     for doc in docsList:
         copyList = []
@@ -73,6 +79,7 @@ def removeStopwords(docsList):
     return newList
 
 def driver():
+    """Opens file and trains vectors"""
     documents = readInput("reviews_data.txt.gz")
     numList = [4,5,6,300,500]
     trainVecs(numList,documents)
