@@ -136,10 +136,15 @@ def vectorDictionaryMaker(inArray,noStop = True):
         vecDict["vecs"+str(i)+"_nostop"] = KeyedVectors.load("vecs"+str(i)+"_nostop.kv", mmap='r')
     return vecDict
 
-def headToHeadCompressor(inFileArray,vecDict):
+def headToHeadCompressor(inFileArray,vecDict,toPickle = True):
+    """ Takes a file from inFileArray and a dictionary of keyed vectors
+    and returns a pickled form of the dictionary and a .txt of the vectors
+    produced by headToHead on consecutive words which are in the keyed vectors.
+    """
     for string, vector in vecDict.items():
         
         word_vectors = vector
+        # Parse length from the input string
         length = int(re.findall("\d+",string)[0])
         fileDictionary = {}
         outArray = outArrayMaker(inFileArray,word_vectors,length)
@@ -170,36 +175,51 @@ def headToHeadCompressor(inFileArray,vecDict):
             fileDictionary[decapArray[newIndex]] = newVector2
             
             i = newIndex
-        with open("pickle_dictionary_"+string+".p", 'wb') as f:  
-            pickle.dump(fileDictionary, f)
-        f.close()
+        if toPickle:
+            with open("pickle_dictionary_"+string+".p", 'wb') as f:  
+                pickle.dump(fileDictionary, f)
+            f.close()
         with open("vectors_out_"+string+".txt", 'w') as g:
             for item in outArray:
                 g.write("%s\n"%item)
         g.close()
 
-def wordonlyCompressor(inFileArray,vectDict):
+def wordonlyCompressor(inFileArray,vectDict,toPickle=True):
+    """ Takes a file from inFileArray and a dictionary of keyed vectors
+    and returns a pickled form of the dictionary and a .txt of the vectors
+    for each word present in the keyed vectors.
+    """
     for string, vector in vectDict.items():
         word_vectors = vector
         length = int(re.findall("\d+",string)[0])
         fileDictionary = {}
+
+        # Makes 2 arrays, one for final output, and one for checking against the dictionary
+        # MIGHT BE REDUNANT
         outArray = outArrayMaker(inFileArray,word_vectors,length)
         decapArray = decapitalizer(inFileArray)
+        
         i = 0
         for i in range(len(decapArray)):
             if decapArray[i] in word_vectors.vocab:
                 newVector1 = vectorShrinker(word_vectors[decapArray[i]])
                 outArray[i][:length] = newVector1
                 fileDictionary[decapArray[i]] = newVector1
-        with open("pickle_dictionary_wordonly"+string+".p", 'wb') as f:  
-            pickle.dump(fileDictionary, f)
-        f.close()
+        
+        if toPickle:
+            with open("pickle_dictionary_wordonly"+string+".p", 'wb') as f:  
+                pickle.dump(fileDictionary, f)
+            f.close()
+        
         with open("vectors_out_wordonly"+string+".txt", 'w') as g:
             for item in outArray:
                 g.write("%s\n"%item)
         g.close()
 
 def wordonlyDecompressor(inPickle,inVectors):
+    """ Takes a pickled dictionary and a .txt file from wordonlyCompressor
+    and returns the decompressed version of that file. """
+
     if inPickle[-2:] != ".p":
         print("First arg must be .p (pickle) file.")
         sys.exit(-1)
@@ -221,7 +241,8 @@ def wordonlyDecompressor(inPickle,inVectors):
     i = 0
     
     while i in range(len(inArray)):
-        
+        # Index Getter shouldnt be called until we get strings not in the
+        # Dictionary out of the way
         while firstWord:
             if isinstance(inArray[i],list):
                 vector1 = inArray[i]
@@ -255,7 +276,9 @@ def wordonlyDecompressor(inPickle,inVectors):
     
 
 def headToHeadDecompressor(inPickle,inVectors):
-
+    """ Takes a pickled dictionary and a .txt file from headToHeadCompressor
+    and returns the decompressed version of that file"""
+    
     if inPickle[-2:] != ".p":
         print("First arg must be .p (pickle) file.")
         sys.exit(-1)
@@ -308,6 +331,7 @@ def headToHeadDecompressor(inPickle,inVectors):
     f.close
 
 def driver():
+    """ Driver for testing """
     inFile = "review1.txt"
     inFileArray = fileOpener(inFile)
     numArray = [5]
