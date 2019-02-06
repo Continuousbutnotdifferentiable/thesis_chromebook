@@ -31,6 +31,7 @@ def readInput(inputFile, pickleOut=True, noStop = True):
 
     logging.info("reading file {0}...this may take a while".format(inputFile))
     documents = []
+    
     with gzip.open (inputFile, 'rb') as f:
         for i, line in enumerate (f):
 
