@@ -19,9 +19,9 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 
 def headToHeadUndo(vector1,vector2,length):
     """Undos the HeadToHead operation for decompression"""
-    newWord = []
+    newWord = vector2
     for i in range(length):
-        newWord.append(vector1[i]+vector2[i])
+        newWord[i] = (vector1[i]+vector2[i])
     return newWord
 
 def intxtToArray(inVectors):
@@ -126,7 +126,8 @@ def indexGetter(array,index):
     """ Gets the index of the next vectorized word"""
     for item in array[index+1:]:
         if isinstance(item,list):
-            return array.index(item)
+            print(item)
+            return array[index+1:].index(item)+index+1
 
 def vectorDictionaryMaker(inArray,noStop = True):
     """ Opens the keyed vectors and saves them into a dictionary """
@@ -193,10 +194,65 @@ def wordonlyCompressor(inFileArray,vectDict):
         with open("pickle_dictionary_wordonly"+string+".p", 'wb') as f:  
             pickle.dump(fileDictionary, f)
         f.close()
-        with open("vectors_out_nohead_wordonly"+string+".txt", 'w') as g:
+        with open("vectors_out_wordonly"+string+".txt", 'w') as g:
             for item in outArray:
                 g.write("%s\n"%item)
         g.close()
+
+def wordonlyDecompressor(inPickle,inVectors):
+    if inPickle[-2:] != ".p":
+        print("First arg must be .p (pickle) file.")
+        sys.exit(-1)
+
+    if inVectors[-4:] != ".txt":
+        print("Second arg must be .txt file.")
+        sys.exit(-1)
+   
+    # Load the pickled dictionary
+    compressionDictionary = pickle.load(open(inPickle,'rb'))
+
+    length = int(re.findall("\d+",inVectors)[0])
+    outFile = "vecs"+str(length)+"wordonly_decompressed_" + ".txt"
+    inArray = intxtToArray(inVectors)
+
+    firstWord = True
+    outString = ''
+    
+    i = 0
+    
+    while i in range(len(inArray)):
+        
+        while firstWord:
+            if isinstance(inArray[i],list):
+                vector1 = inArray[i]
+                outString += vectorProcessor(vector1,compressionDictionary,length)
+                firstWord = False
+            else:
+                outString += inArray[i]
+        print(i,"i before")
+        index = indexGetter(inArray,i)
+        print(index,"index")
+        
+        if index == None:
+            index = i+1
+            while len(inArray) > index:
+                outString += inArray[index]
+                index += 1
+            break
+        
+        for item in inArray[i+1:index]:
+            outString += item 
+        
+        vector1 = inArray[index]
+        outString += vectorProcessor(vector1,compressionDictionary,length)
+        i = index
+        print(i,"i")
+        
+    with open(outFile,"w") as f:
+        f.write(outString)
+    f.close
+        
+    
 
 def headToHeadDecompressor(inPickle,inVectors):
 
@@ -210,15 +266,15 @@ def headToHeadDecompressor(inPickle,inVectors):
     # Load the pickled dictionary
     compressionDictionary = pickle.load(open(inPickle,'rb'))
 
-    outFile = inVectors[-12:-4] + "decompressed_" + ".txt"
-
-    length = int(re.findall("\d+",string)[0])
+    length = int(re.findall("\d+",inVectors)[0])
+    outFile = "vecs"+str(length)+"_decompressed_" + ".txt"
     inArray = intxtToArray(inVectors)
 
     firstWord = True
     outString = ''
     
     i = 0
+    
     
     while i in range(len(inArray)):
         
@@ -254,8 +310,10 @@ def headToHeadDecompressor(inPickle,inVectors):
 def driver():
     inFile = "review1.txt"
     inFileArray = fileOpener(inFile)
-    numArray = [4]
+    numArray = [5]
     vectorDict = vectorDictionaryMaker(numArray)
     headToHeadCompressor(inFileArray,vectorDict)
     wordonlyCompressor(inFileArray,vectorDict)
+    headToHeadDecompressor("pickle_dictionary_vecs5_nostop.p","vectors_out_vecs5_nostop.txt")
+    wordonlyDecompressor("pickle_dictionary_vecs5_nostop.p","vectors_out_wordonlyvecs5_nostop.txt")
     sys.exit("ALL DONE")
