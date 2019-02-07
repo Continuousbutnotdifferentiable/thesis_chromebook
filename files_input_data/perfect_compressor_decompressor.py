@@ -126,7 +126,6 @@ def indexGetter(array,index):
     """ Gets the index of the next vectorized word"""
     for item in array[index+1:]:
         if isinstance(item,list):
-            print(item)
             return array[index+1:].index(item)+index+1
 
 def vectorDictionaryMaker(inArray,noStop = True):
@@ -250,10 +249,8 @@ def wordonlyDecompressor(inPickle,inVectors):
                 firstWord = False
             else:
                 outString += inArray[i]
-        print(i,"i before")
         index = indexGetter(inArray,i)
-        print(index,"index")
-        
+
         if index == None:
             index = i+1
             while len(inArray) > index:
@@ -267,7 +264,6 @@ def wordonlyDecompressor(inPickle,inVectors):
         vector1 = inArray[index]
         outString += vectorProcessor(vector1,compressionDictionary,length)
         i = index
-        print(i,"i")
         
     with open(outFile,"w") as f:
         f.write(outString)
