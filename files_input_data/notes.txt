@@ -4,3 +4,8 @@ contemplate min count??
 change vectorShrinker to take precision as a parameter
 fix /tI being rendered as /ti
 handle punctuation as first character
+
+make function that handles rounding of the kv model
+
+play with varying precisions of the .kv and see how the absolute values of the deltas vary
+
