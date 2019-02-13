@@ -4,6 +4,7 @@ import gzip
 import gensim 
 import logging
 import sys
+from uniqueVectorTruncator import makeUniqueModel
 from gensim.parsing.preprocessing import remove_stopwords
 from gensim.test.utils import get_tmpfile
 from gensim.models import KeyedVectors
@@ -65,6 +66,7 @@ def trainVecs(dimensionList, documents, noStop = True, numEpochs = 15):
         model.train(documents, total_examples=len(documents), epochs=numEpochs)
         word_vectors = model.wv
         word_vectors.save(outString+".kv")
+        makeUniqueModel(outString+".kv")
 
 def removeStopwords(docsList):
     """Rebuilds the documents list without stopwords by calling gensim's remove_stopwords"""

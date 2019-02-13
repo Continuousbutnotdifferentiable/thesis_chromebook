@@ -60,13 +60,6 @@ def headToHead(word1,word2):
         newVector.append(word2[i]-word1[i])
     return newVector
 
-def vectorShrinker(vector):
-    """ Makes vectors with integer precision """
-    newVector = []
-    for entry in vector:
-        newVector.append(int(round(entry)))
-    return newVector  
-
 def fileOpener(inFile):
     inFileArray = [""]
     count = 0
@@ -156,16 +149,16 @@ def headToHeadCompressor(inFileArray,vecDict,toPickle = True):
                 if decapArray[i] not in word_vectors.vocab:
                     continue
                 else:
-                    outArray[i][:length] = vectorShrinker(word_vectors[decapArray[i]])
+                    outArray[i][:length] = word_vectors[decapArray[i]]
                     firstWord = False
             
-            newVector1 = vectorShrinker(word_vectors[decapArray[i]])
+            newVector1 = word_vectors[decapArray[i]]
             newIndex = indexGetter(outArray,i)
             
             if newIndex == None:
                 break
             
-            newVector2 = vectorShrinker(word_vectors[decapArray[newIndex]])
+            newVector2 = word_vectors[decapArray[newIndex]]
             
             vectorBetween = headToHead(newVector1,newVector2)
             outArray[newIndex][:length] = vectorBetween
@@ -201,7 +194,7 @@ def wordonlyCompressor(inFileArray,vectDict,toPickle=True):
         i = 0
         for i in range(len(decapArray)):
             if decapArray[i] in word_vectors.vocab:
-                newVector1 = vectorShrinker(word_vectors[decapArray[i]])
+                newVector1 = word_vectors[decapArray[i]]
                 outArray[i][:length] = newVector1
                 fileDictionary[decapArray[i]] = newVector1
         
